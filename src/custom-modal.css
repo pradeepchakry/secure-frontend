@@ -1,0 +1,13 @@
+
+@media (min-width: 992px){
+    .modal-full {
+        min-width: 20%;
+        margin-left: 80;
+    }
+    
+    .custom-modal {
+        width: 897px;
+        height: 802px;
+
+    }
+}

@@ -59,12 +59,10 @@ const routeChange = () => {
 }
 
 class ApplicationForm extends React.Component {
+  
 
   constructor(props) {
     super(props);
-
-    
-
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
   }
   state = {
@@ -391,7 +389,7 @@ class ApplicationForm extends React.Component {
             fullWidth
             id="studyCenterId"
             label="Study Center opted with Code No."
-            name="name"
+            name="studyCenterId"
             defaultValue="001"
             onChange={this.handleStudyCenterOptedCode}
             autoFocus
@@ -419,7 +417,7 @@ class ApplicationForm extends React.Component {
             name="fatherName"
             autoComplete="fatherName"
             onChange={this.handleFatherName}
-            autoFocus
+            
           />
           <TextField
             variant="outlined"
@@ -431,7 +429,7 @@ class ApplicationForm extends React.Component {
             name="aadharNo"
             autoComplete=""
             onChange={this.handleAadharNo}
-            autoFocus
+            
           />
           <p>-- Address for Communication --</p>
           <TextField
@@ -444,7 +442,7 @@ class ApplicationForm extends React.Component {
             name="Door No."
             autoComplete="doorNo"
             onChange={this.handleDoorNo}
-            autoFocus
+            
           />
           <TextField
             variant="outlined"
@@ -456,7 +454,7 @@ class ApplicationForm extends React.Component {
             name="Street"
             autoComplete="street"
             onChange={this.handleStreet}
-            autoFocus
+            
           />
           <TextField
             variant="outlined"
@@ -468,7 +466,7 @@ class ApplicationForm extends React.Component {
             name="village"
             autoComplete="village"
             onChange={this.handleVillage}
-            autoFocus
+            
           />
           <TextField
             variant="outlined"
@@ -480,7 +478,7 @@ class ApplicationForm extends React.Component {
             name="mandal"
             autoComplete="mandal"
             onChange={this.handleMandal}
-            autoFocus
+            
           />
           <TextField
             variant="outlined"
@@ -492,7 +490,7 @@ class ApplicationForm extends React.Component {
             name="district"
             autoComplete="mandal"
             onChange={this.handleDistrict}
-            autoFocus
+            
           />
           <TextField
             variant="outlined"
@@ -504,7 +502,7 @@ class ApplicationForm extends React.Component {
             name="pincode"
             autoComplete="pincode"
             onChange={this.handlePincode}
-            autoFocus
+            
           />
           <TextField
             variant="outlined"
@@ -516,7 +514,7 @@ class ApplicationForm extends React.Component {
             name="email"
             autoComplete="email"
             onChange={this.handleEmail}
-            autoFocus
+            
           />
           <p>Gender</p>
           <select defaultValue={""} 
@@ -543,7 +541,7 @@ class ApplicationForm extends React.Component {
             name="secondLanguage"
             autoComplete="secondLanguage"
             onChange={this.handleSecondLanguageOpted}
-            autoFocus
+            
           />
           <p>(B.Sc- English Medium only)</p>
           <p>(Only for B.A/B.Com/B.Sc)</p>
@@ -627,7 +625,7 @@ class ApplicationForm extends React.Component {
             name="qualifyingExamination"
             autoComplete="qualifyingExamination"
             onChange={this.handleQualifyingExam}
-            autoFocus
+            
           />
 
           <TextField
@@ -640,7 +638,7 @@ class ApplicationForm extends React.Component {
             name="university"
             autoComplete="university"
             onChange={this.handleUniversity}
-            autoFocus
+            
           />
 
           <Grid item xs={12}>
@@ -669,7 +667,7 @@ class ApplicationForm extends React.Component {
             name="groupSubject"
             autoComplete="groupSubject"
             onChange={this.handleGroupSubject}
-            autoFocus
+            
           />
 
           <TextField
@@ -682,7 +680,7 @@ class ApplicationForm extends React.Component {
             name="maxMarks"
             autoComplete="maxMarks"
             onChange={this.handleMaxMarks}
-            autoFocus
+            
           />
 
           <TextField
@@ -695,7 +693,7 @@ class ApplicationForm extends React.Component {
             name="marksObtained"
             autoComplete="marksObtained"
             onChange={this.handleMarksObtained}
-            autoFocus
+            
           />
 
           <TextField
@@ -708,7 +706,7 @@ class ApplicationForm extends React.Component {
             name="percentageOfMarks"
             autoComplete="percentageOfMarks"
             onChange={this.handlePercentageOfMarks}
-            autoFocus
+            
           />
 
           <p>-- Fee Particulars --</p>
@@ -723,7 +721,7 @@ class ApplicationForm extends React.Component {
             name="feeAmount"
             autoComplete="feeAmount"
             onChange={this.handleFeeAmount}
-            autoFocus
+            
           />
           <TextField
             variant="outlined"
@@ -735,7 +733,7 @@ class ApplicationForm extends React.Component {
             name="challanId"
             autoComplete="challanId"
             onChange={this.handleChallanId}
-            autoFocus
+            
           />
           <Grid item xs={12}>
                         <p>Challan Payment Date</p>
@@ -762,7 +760,6 @@ class ApplicationForm extends React.Component {
             name="bankName"
             autoComplete="bankName"
             onChange={this.handleBankName}
-            autoFocus
           />
 
            <Checkbox

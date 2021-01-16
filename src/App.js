@@ -18,7 +18,7 @@ import BetterUser from './BetterUser'
 import ApplicationForm from './ApplicationForm';
 import StudentRecords from './StudenRecords'
 
-import './my-modal.css';
+import './custom-modal.css';
 
 // The gray background
 const backdropStyle = {
@@ -244,7 +244,6 @@ const StudyCntrLogin = () => {
     event.preventDefault();
 
     if(validate()){
-        alert("User Name and Password Entered ->  " + input["username"]);
 
         Cookies.set("username", input["username"]);
 
@@ -343,6 +342,14 @@ const StudyCntrLogin = () => {
 
 const NodalDashboard = () => {
   const Auth = React.useContext(AuthApi);
+  const [show, setShow] = React.useState(true);
+  const handleClose = () => {
+    setShow(false);
+  }
+  const handleShow = () => {
+    console.log("Rendering Form modal")
+    setShow(true);
+  }
   const handleOnClick = () => {
     Auth.setAuth(false);
     Cookies.remove("user");
@@ -362,13 +369,15 @@ const NodalDashboard = () => {
   }
 
   return(
-    <div>
-      <h1>Nodal Dashboard</h1>
-      {found? <div>
-          <h1>{Cookies.get("studentId")}</h1>
-        </div>: <h1>Display Student Form</h1>}
+    <div style={{}}>
+      <div style={{float: 'right'}}>
+        <button onClick={handleOnClick}>Logout</button>
+      </div>
+      {found? <div style={{clear: 'both'}}>
+          <h1>{Cookies.get("studentId")}</h1></div>:
+        <ApplicationForm />}
 
-      <button onClick={handleOnClick}>Logout</button>
+      
     </div>
   )
 }
@@ -479,6 +488,9 @@ const StudyCntrDashboard = () => {
   }
   return(
     <div>
+      <div style={{float: 'right'}}>
+        <button onClick={handleOnClick}>Logout</button>
+      </div>
       <div>
         {userFetched ? <div>
           <h1>Welcome {userName}</h1>
@@ -491,17 +503,15 @@ const StudyCntrDashboard = () => {
       <button onClick={handleShow}>New Application</button>
 
       <Modal show={show} onHide={handleClose} 
-        dialogClassName="custom-modal"
-        bsClass="my-modal"
+        dialogClassName="modal-full"
         >
-        <Modal.Header closeButton>
+        <Modal.Header closeButton style={{float: 'left'}}>
         </Modal.Header>
-        <Modal.Body style={{'max-height': 'calc(100vh - 210px)', 'overflow-y': 'auto'}}>
+        <Modal.Body style={{'max-height': '50vh', 'overflow-y': 'auto'}}>
           <ApplicationForm />
         </Modal.Body>
         </Modal>
     </>
-      <button onClick={handleOnClick}>Logout</button>
     </div>
   )
 }
