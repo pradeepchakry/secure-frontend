@@ -9,6 +9,28 @@ import {
 import { AppBar, Tabs, Tab } from '@material-ui/core';
 import AuthApi from "./AuthApi";
 import Cookies from 'js-cookie';
+import OtpInput from 'react-otp-input';
+import {Button, Modal} from 'react-bootstrap'
+import RespModal from 'react-responsive-modal';
+import { MDBContainer, MDBBtn, MDBModal, MDBModalBody, MDBModalHeader, MDBModalFooter } from 'mdbreact';
+
+import BetterUser from './BetterUser'
+import ApplicationForm from './ApplicationForm';
+import StudentRecords from './StudenRecords'
+
+import './my-modal.css';
+
+// The gray background
+const backdropStyle = {
+  position: 'fixed',
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: 'rgba(0,0,0,0.3)',
+  padding: 50
+};
+
 
 function App() {
   const [auth, setAuth] = React.useState(false);
@@ -39,36 +61,282 @@ function App() {
   );
 }
 
+
+
+
 const NodalLogin = () => {
-  const Auth = React.useContext(AuthApi);
-  const handleOnClick = () => {
-    Cookies.set("user", "loginTrue");
-    Cookies.set("nodalUser", "loginTrue");
-    Auth.setAuth(true);
-    window.nodalLoggedIn = true;
-    window.studyCntrLoggedIn = false;
-    window.homePage = false;
+
+  const [phone, setPhone] = React.useState("");
+  const [errors, setErrors] = React.useState({});
+  const [showModal, setShowModal] = React.useState(false);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [displayOtpForm, setDisplayOtpForm] = React.useState(false);
+  const [show, setShow] = React.useState(false);
+  const [otpSentSessionId, setOtpSentSessionId] = React.useState("");
+  const [studentId, setStudentId] = React.useState("");
+
+  async function handleSendOTP() {
+    console.log("sending otp to " + phone);
+    let endPoint = "https://2factor.in/API/V1/4db73c1e-4cfa-11eb-8153-0200cd936042/SMS/"
+        + phone + "/AUTOGEN";
+    await fetch(endPoint)
+        .then(res => res.json())
+        .then((data) => {
+          setOtpSentSessionId(data.Details);
+        })
+        .catch(console.log)
+    console.log("otp sent sessionID >> " + otpSentSessionId);
+    
   }
+  
+   function checkExistingStudent(input) {
+    console.log("In checkExistingStudent...")
+    let result = false;
+    let endPoint = "http://159.203.148.240:8080/api/v1/Student/" + input;
+     fetch(endPoint)
+        .then(res => {
+          if(!res.ok) {
+            result = false;
+            Cookies.set("user", "loginTrue");
+            Cookies.set("nodalUser", "loginTrue");
+            Auth.setAuth(true);
+            console.log("No Student found with the number " + input 
+                + " redirecting to new application!");
+          } else {
+            result = true;
+            console.log("Found an existing record with the number " + input
+                + " enrolled, fethcing record!");
+  
+            fetch("http://159.203.148.240:8080/api/v1/Student/" + phone)
+                .then(resp => resp.json())
+                .then((data) => {
+                  console.log("Existing student details --> " + JSON.stringify(data));
+                  setStudentId(data.student_id);
+                  Cookies.set("studentFound", "true");
+                  Cookies.set("studentId", data.student_id);
+                  Cookies.set("user", "loginTrue");
+                  Cookies.set("nodalUser", "loginTrue");
+                  Auth.setAuth(true);
+                })
+          }
+        }
+        ).catch(console.log);
+        return result;
+  }
+  
+   async function verifyOTP(otpReceived) {
+    console.log(otpReceived);
+    let validMobile = false;
+    let endPoint = "https://2factor.in/API/V1/4db73c1e-4cfa-11eb-8153-0200cd936042/SMS/VERIFY/"
+        + otpSentSessionId + "/" + otpReceived;
+    await fetch(endPoint)
+        .then(res => {
+          console.log("otp verification >> " + res.staus);
+          if(!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            } else {
+                console.log("Status: OK");
+                validMobile = true;
+            }           
+        })
+        .catch(console.log);
+    return validMobile;
+  }
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => {
+    console.log("In handleOnClick...");
+    console.log("sending otp");
+    //handleSendOTP();
+    console.log("Otp sent successfully");
+    setShow(true);
+    
+  }
+
+  
+
+  const Auth = React.useContext(AuthApi);
+  const [otp, setOtp] = React.useState("");
+
+  const handleChange = otp => {
+    setOtp(otp);
+    console.log("Otp entered is " + otp)
+  }
+  
+  const handleOTPSubmit = () => {
+      console.log("verify otp" + otp);
+      
+      // verifyOTP(otp).then(bool => {
+      //   console.log("otp valid " + bool)
+      //   Cookies.set("user", "loginTrue");
+      //   Cookies.set("nodalUser", "loginTrue");
+      //   Auth.setAuth(true);
+      //   window.nodalLoggedIn = true;
+      //   window.studyCntrLoggedIn = false;
+      //   window.homePage = false;
+      // });
+
+      Cookies.set("user", "loginTrue");
+      console.log(Cookies.get("user"));
+      if(Cookies.get("user") == "loginTrue") {
+        checkExistingStudent(phone);
+      }
+  }
+
+  const handlePhone = (e) => {
+    setPhone(e.target.value)
+  }
+
   return (
     <div>
-      <button onClick={handleOnClick}>Login</button>
+      <label>
+        Phone
+        <input
+        type="tel"
+        name="phone"
+        onChange={handlePhone}
+      />
+      </label>
+      <div className="form-group">
+      <>
+      <button variant="primary" onClick={handleShow}>
+        Login
+      </button>
+
+      <Modal size="sm" show={show} onHide={handleClose} 
+          aria-labelledby="example-modal-sizes-title-sm">
+        <Modal.Header closeButton>
+          <Modal.Title>Verify OTP</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <OtpInput
+            value={otp}
+            onChange={handleChange}
+            numInputs={6}
+            separator={<span>-</span>}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <button variant="secondary" onClick={handleClose}>
+            Change Number
+          </button>
+          <button variant="primary" onClick={handleOTPSubmit}>
+            Submit
+          </button>
+        </Modal.Footer>
+      </Modal>
+    </>
+      </div>
+      
     </div>
+
+    
   )
 }
 
 const StudyCntrLogin = () => {
   const Auth = React.useContext(AuthApi);
-  const handleOnClick = () => {
-    Cookies.set("user", "loginTrue");
-    Cookies.set("studyCntrUser", "loginTrue");
-    Auth.setAuth(true);
-    window.studyCntrLoggedIn = true;
-    window.nodalLoggedIn = false;
-    window.homePage = false;
+  const [input, setInput] = React.useState({});
+  const [errors, setErrors] = React.useState({});
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if(validate()){
+        alert("User Name and Password Entered ->  " + input["username"]);
+
+        Cookies.set("username", input["username"]);
+
+        Cookies.set("user", "loginTrue");
+        Cookies.set("studyCntrUser", "loginTrue");
+        Auth.setAuth(true);
+    } else {
+      resetForm();
+    }
+
+  }
+
+  const handleChange = (event) => {
+    let userInput = input;
+    userInput[event.target.name] = event.target.value;
+    setInput(userInput)
+  }
+
+  const resetForm = () => {
+    Array.from(document.querySelectorAll("input")).forEach(
+      input => (input.value = "")
+    );
+    setInput({});
+  };
+
+  const validate  = () => {
+    let userInput = input;
+    let userErrors = {};
+    let isValid = true;
+
+    if (!userInput["username"]) {
+        isValid = false;
+        userErrors["username"] = "Please enter your username.";
+        resetForm();
+    }
+    
+    if (typeof userInput["username"] !== "undefined") {
+        const re = /^\S*$/;
+        if(userInput["username"].length < 6 || !re.test(userInput["username"])) {
+          isValid = false;
+          userErrors["username"] = "Please enter valid username.";
+          resetForm();
+        }
+        
+    }
+    
+    if (!userInput["password"]) {
+      isValid = false;
+      userErrors["password"] = "Please enter your password.";
+    }
+
+    if (userInput["username"]){
+      if(!userInput["password"]) {
+        isValid = false;
+        userErrors["password"] = "Please enter your password.";
+      }
+      setInput(userInput);
+  }
+
+    setErrors(userErrors);
+    return isValid;
   }
   return (
-    <div>
-      <button onClick={handleOnClick}>Login</button>
+    <div className="backdrop" style={{backdropStyle}}>
+      <form onSubmit={handleSubmit}>
+          <div class="form-group">
+            <label for="username">Username </label>
+            <input 
+              type="text" 
+              name="username" 
+              value={input.username}
+              onChange={handleChange}
+              class="form-control" 
+              placeholder="Enter username" 
+              id="username" />
+          <div className="text-danger">{errors.username}</div>
+        </div>
+        <div class="form-group">
+            <label for="password">Password </label>
+            <input 
+              type="password" 
+              name="password" 
+              value={input.password}
+              onChange={handleChange}
+              class="form-control" 
+              placeholder="Enter password" 
+              id="password" />
+          <div className="text-danger">{errors.username}</div>
+        </div>
+        <div className="text-danger">{errors.password}</div>
+        <input type="submit" value="Submit" class="btn btn-success" />
+      </form>
     </div>
   )
 }
@@ -79,13 +347,27 @@ const NodalDashboard = () => {
     Auth.setAuth(false);
     Cookies.remove("user");
     Cookies.remove("nodalUser");
+    Cookies.remove("studentFound");
+    Cookies.remove("studentId");
     window.studyCntrLoggedIn = false;
     window.nodalLoggedIn = false;
     window.homePage = true;
   }
+
+  
+  var found = false;
+  if(Cookies.get("studentFound") === "true") {
+    console.log("Student found!" );
+    found = true;
+  }
+
   return(
     <div>
       <h1>Nodal Dashboard</h1>
+      {found? <div>
+          <h1>{Cookies.get("studentId")}</h1>
+        </div>: <h1>Display Student Form</h1>}
+
       <button onClick={handleOnClick}>Logout</button>
     </div>
   )
@@ -93,17 +375,132 @@ const NodalDashboard = () => {
 
 const StudyCntrDashboard = () => {
   const Auth = React.useContext(AuthApi);
+  const [studentData, setStudentData] = React.useState([]);
+  const [value, setValue] = React.useState(0);
+  const [open, setOpen] = React.useState(false);
+  const [formData, setFormData] = React.useState({});
+  const [show, setShow] = React.useState(false);
+  const [modal, setModal] = React.useState(false);
+  
+
+  const onCloseModal = () => setOpen(false);
+
+  const studentDataExists = (username) => {
+    // api call to get user data
+    return true;
+  }
+
+  const handleClose = () => {
+    setShow(false);
+  }
+  const handleShow = () => {
+    console.log("Rendering Form modal")
+    setShow(true);
+  }
+
+  const handleChange = formData => {
+    setFormData(formData);
+    console.log("Form Data --> " + formData)
+  }
+  
+  const handleFormSubmit = () => {
+    console.log("Form Data --> " + formData)
+  }
+
+  const fetchExistingRecords = (username) => {
+    // Dummy data 
+    let data = [{studentId: "101",
+      name: "Parameshwar Reddy",
+      email: "parama@jayasyamtheatre.com",
+      status: "Payment pending"
+      },{
+      studentId: "102",
+      name: "Venkatesh Malimelu",
+      email: "venky@gangammatemple.com",
+      status: "Payment pending"
+      },{
+      studentId: "103",
+      name: "Babaji Shaik",
+      email: "babaji@icici.com",
+      status: "Payment pending"
+      },{
+      studentId: "104",
+      name: "Narasimha Medi",
+      email: "narasimha@goldloans.com",
+      status: "Payment pending"
+      },{
+      studentId: "105",
+      name: "Sunny Leone",
+      email: "sunny@ph.com",
+      status: "Payment pending"
+    }];
+    return data;
+  }
+
+  const toggle = () => {
+    setModal(!modal);
+  }
+
+
+  let userData = [];
+  let userName = "";
+  let userFetched = false;
+  let tableSize = 0;
+  
+  if(Cookies.get("studyCntrUser") === "loginTrue") {
+    userName = Cookies.get("username");
+    console.log("fetching user history for " + userName);
+
+    if(studentDataExists(userName)) {
+        console.log(fetchExistingRecords(userName));
+        userFetched = true;
+        userData = fetchExistingRecords(userName);
+
+        var key, count = 0;
+        for( key in userData) {
+            if(userData.hasOwnProperty(key)) {
+                count++;
+            }
+        }
+
+        console.log(count)
+        tableSize = count;
+    }
+}
+  
   const handleOnClick = () => {
     Auth.setAuth(false);
     Cookies.remove("user");
     Cookies.remove("studyCntrUser");
-    window.nodalLoggedIn = false;
-    window.studyCntrLoggedIn = false;
-    window.homePage = true;
+    Cookies.remove("username");
+    // window.nodalLoggedIn = false;
+    // window.studyCntrLoggedIn = false;
+    // window.homePage = true;
   }
   return(
     <div>
-      <h1>Study Center Dashboard</h1>
+      <div>
+        {userFetched ? <div>
+          <h1>Welcome {userName}</h1>
+            <h3>Student Records</h3>
+            <StudentRecords data={userData} />
+            </div>
+            : <h1>No Student records for this Study Center</h1>}
+            </div>
+      <>
+      <button onClick={handleShow}>New Application</button>
+
+      <Modal show={show} onHide={handleClose} 
+        dialogClassName="custom-modal"
+        bsClass="my-modal"
+        >
+        <Modal.Header closeButton>
+        </Modal.Header>
+        <Modal.Body style={{'max-height': 'calc(100vh - 210px)', 'overflow-y': 'auto'}}>
+          <ApplicationForm />
+        </Modal.Body>
+        </Modal>
+    </>
       <button onClick={handleOnClick}>Logout</button>
     </div>
   )
